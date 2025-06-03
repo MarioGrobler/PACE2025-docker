@@ -63,7 +63,6 @@ services:
       MAX_TIME: 300  #in seconds
       MERCY_TIME: 25 #in seconds
       SOLVER_CMD: "python3,/solver/hs_greedy.py"
-      
     volumes:
       - "./output/hs/heuristic:/output"
       - "./instances/hs/heuristic:/instances"
