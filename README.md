@@ -31,7 +31,7 @@ where `[name]` is one of the following elements reflecting the problem and track
 
 If the process succeeded, find the `output` directory containing a `.csv` file for each track. This file contains the results of the evaluation process, including the status per instance (ok, exception, ...), the runtime, the solution size, and possibly an error message.
 
-You are not ready to install your own solver.
+You are now ready to install your own solver.
 
 
 ## How to replace the demo solver
