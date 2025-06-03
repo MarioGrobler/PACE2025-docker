@@ -1,0 +1,69 @@
+services:
+  ds-exact:
+    build:
+      context: .
+      dockerfile: pace-eval-ds-exact/Dockerfile
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "16GB"
+    environment:
+      MAX_TIME: 1800 #in seconds
+      MERCY_TIME: 30 #in seconds
+      SOLVER_CMD: "python3,/solver/ds_greedy.py"
+    volumes:
+      - "./output/ds/exact:/output"
+      - "./instances/ds/exact:/instances"
+
+  ds-heuristic:
+    build:
+      context: .
+      dockerfile: pace-eval-ds-exact/Dockerfile
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "16GB"
+    environment:
+      MAX_TIME: 300  #in seconds
+      MERCY_TIME: 25 #in seconds
+      SOLVER_CMD: "python3,/solver/ds_greedy.py"
+    volumes:
+      - "./output/ds/heuristic:/output"
+      - "./instances/ds/heuristic:/instances"
+
+  hs-exact:
+    build:
+      context: .
+      dockerfile: pace-eval-hs-exact/Dockerfile
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "16GB"
+    environment:
+      MAX_TIME: 1800 #in seconds
+      MERCY_TIME: 25 #in seconds
+      SOLVER_CMD: "python3,/solver/hs_greedy.py"
+    volumes:
+      - "./output/hs/exact:/output"
+      - "./instances/hs/exact:/instances"
+
+  hs-heuristic:
+    build:
+      context: .
+      dockerfile: pace-eval-hs-heuristic/Dockerfile
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "16GB"
+    environment:
+      MAX_TIME: 300  #in seconds
+      MERCY_TIME: 25 #in seconds
+      SOLVER_CMD: "python3,/solver/hs_greedy.py"
+      
+    volumes:
+      - "./output/hs/heuristic:/output"
+      - "./instances/hs/heuristic:/instances"

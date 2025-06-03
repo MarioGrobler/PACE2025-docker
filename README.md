@@ -1,66 +1,83 @@
 # Docker Environment for the PACE Challenge 2025
 
-This repository contains two docker environments, one for the dominating set tracks and one for the hitting set tracks of the PACE Challenge 2025.
+This repository contains a docker stack for the [PACE Challenge 2025](https://pacechallenge.org/2025/), consisting of four containers; one for each problem and track.
 The evaluation of all solvers will take place within this environment to ensure fairness. To be precise, we provide one core and 16 GB of RAM for all solvers.
 
 This repository contains a small demo solver and a small set of test instances for both problems.
 
 ## Getting started
 
-First of all, install docker on your machine if not already present. Then, depending on whether you want to evaluate a dominating set solver or heuristic solver, navigate to `pace-eval-ds` or `pace-eval-hs` respectively. Then run
+First of all, install docker and  the docker compose plugin on your machine if not already present. We recommend to use [Docker Desktop](https://docs.docker.com/get-started/introduction/get-docker-desktop/) which contains everything you need and is easy to install. However, note that the commercial use of Docker Desktop for larger enterprises requires a paid subscription.
+
+Afterwards, build the docker images using the following command.
 
 ```bash
-docker build -t pace-eval .
+docker compose build
 ```
-
-This will set up the environment. Afterwards, you can evaluate the provided demo solver by invoking
+Finally, you can start the evaluation process for all tracks by using the following command.
 
 ```bash
-docker run --cpus="1" --memory="16g" --rm -v "$PWD":/app pace-eval
+docker compose up
 ```
 
-The provided restrictions are exactly those we will use to evaluate the solvers, in particularly only one core and 16 GB of RAM.
+This starts the execution of four containers (one for each combination of problem and track) and evaluates a demo solver.
+Each container terminates once the evaluation process has finished.
+
+You can also start the execution of a single container by using the following command instead.
+```bash
+docker compose up [name]
+```
+where `[name]` is one of the following elements reflecting the problem and track: `ds-exact`, `ds-heuristic`, `hs-exact`, `hs-heuristic`.
+
+If the process succeeded, find the `output` directory containing a `.csv` file for each track. This file contains the results of the evaluation process, including the status per instance (ok, exception, ...), the runtime, the solution size, and possibly an error message.
+
+You are not ready to install your own solver.
+
 
 ## How to replace the demo solver
-If you would like to replace the demo solver, you need to modify some things. This depends on whether you want to run an exact solver or a heuristic solver.
+If you would like to replace the demo solver, you need to modify some things. First clone this repository.
+Then:
 
-### The Dockerfile
-The Dockerfile runs the evaluation process for heuristic solvers per default, as specified in line 21:
-```docker
-CMD ["python3", "eval_heur.py"] 
-```
-If you want to invoke the evaluation process for exact solvers, replace the line by
-```docker
-CMD ["python3", "eval_exact.py"] 
-```
-You can also comment out this line if you don't want to invoke the evaluation process as soon as you run docker.
+ - If your solver is provided as an executable file, e.g., a python script, an executable jar or a static binary, simply replace our demo solver in the respective `solver` directory.
+   Finally, you need to adjust the respective `SOLVER_CMD` field in the `docker-compose.yaml` to specify how to execute your solver.
+   In our demo case, the solver is a python script which is executed py running `python3 ds_greedy.py`, hence the `SOLVER_CMD` is set to `"python3,/solver/ds_greedy.py"`. Observe that the comma serves as a delimeter.
+ - If you want to build your solver from source, copy your source folder into the respective `solver` directory.
+   Afterwards, you need to modify the respective `Dockerfile` depending on the installation process of your solver. In each `Dockerfile`, you will find a comment at the place you need to modify.
+   We provide some examples.
+     - If you need to execute a make file, add the line `RUN make` into the `Dockerfile`. It might be the case that you need to make the files executable, eg by running `chmod 777`.
+     - If you need to compile a `.cpp` source file using `g++` add the line `RUN g++ -O2 -std=c++17 solver.cpp -o solver` into the `Dockerfile`.
+     - If you need to compile a `.java` source file using `javac`,  add the line `RUN javac solver.java` into the `Dockerfile`.
+   
+   In case you need to install third-party dependencies, we recommend the use of different build stages in order to reduce the size of the image. We refer to [multi-stage-builds](https://docs.docker.com/build/building/multi-stage/) for further explanation.
+   
+   Finally, you need to adjust the `SOLVER_CMD` field in the `docker-compose.yaml` as in the first case.
+   
 
-By the way, you can directly install your solver in the docker file, eg by running `g++` or `make`, depending on your solver (see eg the uncommented line 17). Alternatively, you can install your solver as usual.
+## How to replace the instances
+This project contains only three test instances per track in the `instances` directory. If you want to run the evaluation process on other instances, simply replace (or add) your instances into the `instances` folder.
+For example, you can find the official set of public instances for PACE 2025 also on [Github](https://github.com/MarioGrobler/PACE2025-instances). Note that the folder structure in the instance repository matches the one required here.
 
-### The evaluation scripts
-This repository contains two evaluation scripts, one for exact solvers and one for heuristiv solvers. However, up to time limits they are identical. We will briefly guide you through the important parts.
+      
+## The environment variables in the Docker compose file
+The docker compose file `docker-compose.yaml` specifies the configuration for each track. This includes resource limitations and the specification of time limits. In particular, we allow only one core and 16GB of RAM for each track. For heuristic solvers, we allow 5 minutes before sending a SIGTERM signal with a mercy time of 25 seconds (that is, the time before your solver is killed after sending SIGTERM), while we allow 30 minutes for exact solvers with a mercy time of 30 seconds.
+This configuration reflects exactly the configuration we will use for the final evaluation of the submitted solvers. However, you can modify the resource limitations by editing the `cpus` and `memory` values for each track. Similarly, you can modify the mentioned time limits by editing `MAX_TIME` and `MERCY_TIME` values for each track.
 
-Lines 6 to 10 specify the working directories and solvers
- - `SOLVER_COMMAND` is a list specifying the solver location and how to execute them. In our case it is `["python3", "./ds_greedy.py"]`, where `./ds_greedy.py` is the location of the solver while the `python3` is the executable needed to run the solver. If your solver is a single executable the list is also a singleton.
- - `VERIFIER_COMMAND` is similar to `SOLVER_COMMAND`, just for the verifier. You can leave this line untouched if you want to use the default verifier (which we will also use). Note that the default verifier does not check for optimality.
- - `INSTANCES_DIR` is the directory containing the instances the solver will be evaluated on. Note that this repository only contains three test instances. To find the public instances for PACE 2025, we refer to the [instance repository](https://github.com/MarioGrobler/PACE2025-instances).
- - `OUTPUT_DIR` is a directory that will be created to save the output of your solver.
- - `RESULTS_FILE` is the name of a CSV-file containing the result of the evaluation process (solution ok, timeout, runtime error).
 
-The next two lines contain the time limits.
- - `TIME_LIMIT` contains the time limit per run in seconds. Default is 30min for exact solvers and 5min for heuristic solvers.
- - `MERCY_TIME` contains the mercy time in seconds, that is, the time period between sending `SIGTERM` and `SIGKILL`. Default is 25 seconds for both, the exact and heuristic track.
+## LICENSE
+Copyright 2025 Mario Grobler
 
-## Saving and loading docker containers
-Once everything is set up, you can save the whole environment as an follows.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-```bash
-docker save pace-eval > pace-eval.tar
-```
+    http://www.apache.org/licenses/LICENSE-2.0
 
-Similarly, you can load an image as follows.
-```bash
-docker load < pace-eval.tar
-```
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 
-Afterwards, you can run it as usual (see above).
+
+### Acknowledgements
+A big “Thank You” goes to Yannik (Putzzmunta) for assisting with the docker setup.
