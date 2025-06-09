@@ -44,7 +44,7 @@ services:
           memory: "16GB"
     environment:
       MAX_TIME: 1800 #in seconds
-      MERCY_TIME: 25 #in seconds
+      MERCY_TIME: 30 #in seconds
       SOLVER_CMD: "python3,/solver/hs_greedy.py"
     volumes:
       - "./output/hs/exact:/output"
