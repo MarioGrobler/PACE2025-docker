@@ -46,6 +46,20 @@ def read_graph(filename):
                 edges.append(tuple(map(int, line.split(" "))))
 
         return Graph(n, edges)
+    
+def read_graph_from_stdin(input_stream):
+    n = 0
+    edges = []
+    for line in input_stream:
+        if line.strip() == "" or line[0] == "c":
+            continue
+
+        if line[0] == "p":
+            n = int(line.split(" ")[2])
+        else:
+            edges.append(tuple(map(int, line.split(" "))))
+
+    return Graph(n, edges)    
 
 # Write the graph to a .gr file
 def write_graph(graph, filename):
@@ -130,7 +144,8 @@ def print_solution(solution):
 
 # Read graph and user solution
 def main():
-    graph = read_graph(sys.argv[1])
+    graph = read_graph_from_stdin(sys.stdin)
+    #graph = read_graph(sys.argv[1])
     sol = greedy_solution(graph)
     print_solution(sol)
     # Uncomment the following lines to write the solution to a file

@@ -44,6 +44,21 @@ def read_hypergraph(filename):
                 edges.append(tuple(map(int, line.split(" "))))
 
         return HyperGraph(n, edges)
+    
+def read_hypergraph_from_stdin(input_stream):
+    n = 0
+    edges = []
+    for line in input_stream:
+        line = line.strip()
+        if line == "" or line[0] == "c":
+            continue
+
+        if line[0] == "p":
+            n = int(line.split(" ")[2])
+        else:
+            edges.append(tuple(map(int, line.split(" "))))
+
+    return HyperGraph(n, edges)    
 
 # Read the solution from a file
 def read_solution(filename):
@@ -130,7 +145,8 @@ def print_solution(solution):
 
 # Read graph and user solution
 def main():
-    graph = read_hypergraph(sys.argv[1])
+    graph = read_hypergraph_from_stdin(sys.stdin)
+    #graph = read_hypergraph(sys.argv[1])
     sol = greedy_solution(graph)
     print_solution(sol)
     # Uncomment the following lines to write the solution to a file
