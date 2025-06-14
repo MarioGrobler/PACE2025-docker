@@ -48,8 +48,6 @@ with open(RESULTS_FILE, "w") as result_file:
             try:
                 #stdout, stderr = proc.communicate(timeout=MAX_TIME)
                 stdout, stderr = proc.communicate(timeout=MAX_TIME, input=instance)
-                end = time.time()
-                runtime = end - start
             except subprocess.TimeoutExpired:
                 proc.send_signal(signal.SIGTERM)
                 try:
@@ -57,13 +55,16 @@ with open(RESULTS_FILE, "w") as result_file:
                 except subprocess.TimeoutExpired:
                     proc.kill()
                     stdout, stderr = proc.communicate()
-                result_file.write(f"{instance_file},TIMEOUT,,,\n")
-                continue
+                    result_file.write(f"{instance_file},TIMEOUT,,,\n")
+                    continue
+
+            end = time.time()
+            runtime = end - start
 
             if proc.returncode != 0:
                 result_file.write(f"{instance_file},RUNTIME_ERROR,,,{stderr.strip()}\n")
                 continue
-            
+
             with open(output_path, "w") as out_file:
                 out_file.write(stdout)
 
@@ -86,5 +87,7 @@ with open(RESULTS_FILE, "w") as result_file:
 
         except Exception as e:
             result_file.write(f"{instance_file},EXCEPTION,,,{str(e)}\n")
+
+        result_file.flush()
 
 print("End")
