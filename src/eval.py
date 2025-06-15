@@ -1,5 +1,3 @@
-
-
 import subprocess
 import time
 import os
@@ -58,10 +56,12 @@ with open(RESULTS_FILE, "w") as result_file:
                     proc.kill()
                     stdout, stderr = proc.communicate()
                 result_file.write(f"{instance_file},TIMEOUT,,,\n")
+                result_file.flush()
                 continue
 
             if proc.returncode != 0:
                 result_file.write(f"{instance_file},RUNTIME_ERROR,,,{stderr.strip()}\n")
+                result_file.flush()
                 continue
             
             with open(output_path, "w") as out_file:
@@ -77,14 +77,18 @@ with open(RESULTS_FILE, "w") as result_file:
             if verifier.returncode == 0:
                 sol_size = int(verifier.stdout.strip())
                 result_file.write(f"{instance_file},OK,{runtime:.2f},{sol_size},\n")
+                result_file.flush()
             elif verifier.returncode == -1:
                 # verifier reports error
                 result_file.write(f"{instance_file},INVALID_SOLUTION,{runtime:.2f},,VerifierError: {verifier.stderr.strip()}\n")
+                result_file.flush()
             else:
                 # something went totally wrong
                 result_file.write(f"{instance_file},VERIFIER_ERROR,{runtime:.2f},,ReturnCode: {verifier.returncode}, {verifier.stderr.strip()}\n")
+                result_file.flush()
 
         except Exception as e:
             result_file.write(f"{instance_file},EXCEPTION,,,{str(e)}\n")
+            result_file.flush()
 
 print("End")
