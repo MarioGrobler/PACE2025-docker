@@ -29,7 +29,7 @@ with open(RESULTS_FILE, "w") as result_file:
 
             start = time.time()
             proc = subprocess.Popen(
-                ["taskset", "-c", "0"] + SOLVER_CMD,
+                SOLVER_CMD,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
