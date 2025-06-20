@@ -98,7 +98,8 @@ with open(RESULTS_FILE, "w") as result_file:
                 result_file.flush()
 
         except Exception as e:
-            result_file.write(f"{instance_file},EXCEPTION,,,{str(e).replace(",", " ").replace("\n", " ")}\n")
+            msg = str(e).replace(",", " ").replace("\n", " ")
+            result_file.write(f"{instance_file},EXCEPTION,,,{msg}\n")
             result_file.flush()
 
 print("End")
