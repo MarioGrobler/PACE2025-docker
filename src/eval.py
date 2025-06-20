@@ -46,8 +46,6 @@ with open(RESULTS_FILE, "w") as result_file:
             try:
                 #stdout, stderr = proc.communicate(timeout=MAX_TIME)
                 stdout, stderr = proc.communicate(timeout=MAX_TIME, input=instance)
-                end = time.time()
-                runtime = end - start
             except subprocess.TimeoutExpired:
                 proc.send_signal(signal.SIGTERM)
                 try:
@@ -55,12 +53,23 @@ with open(RESULTS_FILE, "w") as result_file:
                 except subprocess.TimeoutExpired:
                     proc.kill()
                     stdout, stderr = proc.communicate()
-                result_file.write(f"{instance_file},TIMEOUT,,,\n")
+                    end = time.time()
+                    runtime = end - start
+                    result_file.write(f"{instance_file},TIMEOUT,{runtime:.2f},,\n")
+                    result_file.flush()
+                    continue
+            finally:
+                end = time.time()
+                runtime = end - start
+
+            if proc.returncode == -15:  # SIGTERM not handled by the solver
+                result_file.write(f"{instance_file},TIMEOUT,{runtime:.2f},,\n")
                 result_file.flush()
                 continue
 
             if proc.returncode != 0:
-                result_file.write(f"{instance_file},RUNTIME_ERROR,,,{stderr.strip()}\n")
+                error_msg = stderr.strip().replace(",", " ").replace("\n", " ") if stderr else "Unknown error"
+                result_file.write(f"{instance_file},RUNTIME_ERROR,{runtime:.2f},,{error_msg}\n")
                 result_file.flush()
                 continue
             
@@ -84,11 +93,12 @@ with open(RESULTS_FILE, "w") as result_file:
                 result_file.flush()
             else:
                 # something went totally wrong
-                result_file.write(f"{instance_file},VERIFIER_ERROR,{runtime:.2f},,ReturnCode: {verifier.returncode}, {verifier.stderr.strip()}\n")
+                verifier_msg = verifier.stderr.strip().replace(",", " ").replace("\n", " ") 
+                result_file.write(f"{instance_file},VERIFIER_ERROR,{runtime:.2f},,ReturnCode: {verifier.returncode} ({verifier_msg})\n")
                 result_file.flush()
 
         except Exception as e:
-            result_file.write(f"{instance_file},EXCEPTION,,,{str(e)}\n")
+            result_file.write(f"{instance_file},EXCEPTION,,,{str(e).replace(",", " ").replace("\n", " ")}\n")
             result_file.flush()
 
 print("End")
