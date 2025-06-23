@@ -19,8 +19,8 @@ COPY pace-eval-ds-heuristic/solver/ds_greedy.py /solver/ds_greedy.py
 
 # working directory
 WORKDIR /pace
-COPY ../src/eval.py eval.py
-COPY ../src/ds_verifier.py verifier.py
+COPY src/eval.py eval.py
+COPY src/ds_verifier.py verifier.py
 
 RUN mkdir -p /output && chmod 777 /output
 CMD ["python3", "eval.py"]

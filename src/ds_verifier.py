@@ -105,28 +105,28 @@ def main():
         try: 
             graph = read_graph(sys.argv[1])
         except Exception as e:
-            print("could not read input graph correctly")
+            print("could not read input graph correctly", file=sys.stderr)
             return -1
         
         if(len(sys.argv) < 3):
-            print("no user solution provided")
+            print("no user solution provided", file=sys.stderr)
             return -1
 
         try:    
             their_solution = read_solution(sys.argv[2])
         except Exception as e:
-            print("could not read user solution correctly")
+            print("could not read user solution correctly", file=sys.stderr)
             return -1
         
         if not verify_solution(graph, their_solution):
-            print("user solution is not valid")
+            print("user solution is not valid", file=sys.stderr)
             return -1
          
         print(f"{their_solution.k}")
         return 0
 
     except Exception as e:
-        print("something went very wrong")
+        print("something went very wrong", file=sys.stderr)
         return -1
 
 if __name__ == '__main__':

@@ -19,8 +19,8 @@ COPY pace-eval-hs-exact/solver/hs_greedy.py /solver/hs_greedy.py
 
 # working directory
 WORKDIR /pace
-COPY ../src/eval.py eval.py
-COPY ../src/hs_verifier.py verifier.py
+COPY src/eval.py eval.py
+COPY src/hs_verifier.py verifier.py
 
 RUN mkdir -p /output && chmod 777 /output
 CMD ["python3", "eval.py"]
